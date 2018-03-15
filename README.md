@@ -1,6 +1,5 @@
 # endian
-endian is a collection of byte-order aware routines written in C for reading from and writing to arbitrary 
-pointers in memory.
+`endian` is a collection of byte-order aware routines written in C.  Unlike stream-oriented libraries that depend on a user-supplied method for reading and writing bytes, endian is optimized for reading from and writing between pointers in memory.
 
 ## Sample Usage
 
@@ -8,9 +7,25 @@ pointers in memory.
     #include <stdio.h>
     
     int main() {
-      uint8_t bytes = {0x11, 0x22, 0x33, 0x44};
-      printf("Interpreted as a little-endian byte stream, bytes = 0x%x\n", get_uint32_le((void *)bytes));
-      printf("Interpreted as a big-endian byte stream, bytes = 0x%x\n", get_uint32_be((void *)bytes));
+      uint8_t bytes[] = {0x11, 0x22, 0x33, 0x44};
+      printf("Interpreted as a little-endian byte stream, bytes = 0x%x\n", get_uint32_t_le((void *)bytes));
+      printf("Interpreted as a big-endian byte stream, bytes = 0x%x\n", get_uint32_t_be((void *)bytes));
+      return 0;
+    }
+
+`endian` also provides two macros, MEMCPY_LE and MEMCPY_BE, which are ideal when you need to move data between two memory locations.  They take the same arguments as memcpy() but will perform byte reversing as needed.  The example above could be re-written as:
+
+    #include "endian.h"
+    #include <stdio.h>
+    
+    int main() {
+      uint8_t bytes[] = {0x11, 0x22, 0x33, 0x44};
+      uint32_t v;
+      
+      MEMCPY_LE(&v, bytes, sizeof(uint32_t));
+      printf("Interpreted as a little-endian byte stream, bytes = 0x%x\n", v);
+      MEMCPY_BE(&v, bytes, sizeof(uint32_t));
+      printf("Interpreted as a big-endian byte stream, bytes = 0x%x\n", v);
       return 0;
     }
 
@@ -23,13 +38,9 @@ pointers in memory.
     Starting endian tests...
     ...finished endian tests
 
-Note: If you want to extend the unit tests, take note of the comments about the `ENDIAN_ORDER` macro in `endian.c`.
-
 ## Design
 
 The read functions take a `void *src` pointer as an argument from which bytes are fetched.  Similarly, the
-write functions take a `void *dst` pointer to specify where the converted data is to be stored.  Compared 
-to other byte-order libraries that take a byte-at-a-time read or write method, this approach allows endian
-to shortcut conversion when the byte ordering of the host machine matches the desired byte ordering.
+write functions take a `void *dst` pointer to specify where the converted data is to be stored.
 
 Issues and pull requests are welcomed.
