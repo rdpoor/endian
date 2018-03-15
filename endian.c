@@ -19,293 +19,76 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.#include "endian.h"
+SOFTWARE.
 */
 
+#include "endian.h"
+#include <stdint.h>
+#include <string.h>
+
+// The __BYTE_ORDER__ compiler macro defines the byte ordering on the target
+// CPU.  If it is little endian, we define little endian operations to use the
+// native memcpy and to revcpy for big endian operations.  And vice versa for
+// big endian CPUs.
+
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#define MEMCPY_LE memcpy
+#define MEMCPY_BE revcpy
+#else
+#define MEMCPY_LE revcpy
+#define MEMCPY_BE memcpy
+#endif
+
 /**
- * A note on the ENDIAN_ORDER macro:
- *
- * Unless otherwise defined, ENDIAN_ORDER will be defined by the GCC compiler to
- * match the byte ordering of the target architecture.  In this case, the endian
- * library will use shortcuts when possible to avoid shuffling bytes.  If you 
- * want to test the non-shortcut code branches, un-comment the following line:
+ * revcpy is like memcpy but with byte reversal
  */
-// #define ENDIAN_ORDER NO_SHORTCUTS
-
-#ifndef ENDIAN_ORDER
-#define ENDIAN_ORDER __BYTE_ORDER__
-#endif
-
-
-uint8_t get_uint8_le(void *src) {
-  return *COERCE_PTR(uint8_t, src);
-}
-
-uint8_t get_uint8_be(void *src) {
-  return *COERCE_PTR(uint8_t, src);
-}
-
-uint16_t get_uint16_le(void *src) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint16_t *v1 = COERCE_PTR(uint16_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint16_t v2;
-  v2 = (*v1++ & 0xff) << 0;
-  v2 |= (*v1 & 0xff) << 8;
-  return v2;
-#endif
-}
-
-uint16_t get_uint16_be(void *src) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint16_t *v1 = COERCE_PTR(uint16_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint16_t v2;
-  v2 = (*v1++ & 0xff) << 8;
-  v2 |= (*v1 & 0xff) << 0;
-  return v2;
-#endif
-}
-
-uint32_t get_uint32_le(void *src) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint32_t *v1 = COERCE_PTR(uint32_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint32_t v2;
-  v2 = (*v1++ & 0xff) << 0;
-  v2 |= (*v1++ & 0xff) << 8;
-  v2 |= (*v1++ & 0xff) << 16;
-  v2 |= (*v1 & 0xff) << 24;
-  return v2;
-#endif
-}
-
-uint32_t get_uint32_be(void *src) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint32_t *v1 = COERCE_PTR(uint32_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint32_t v2;
-  v2 = (*v1++ & 0xff) << 24;
-  v2 |= (*v1++ & 0xff) << 16;
-  v2 |= (*v1++ & 0xff) << 8;
-  v2 |= (*v1 & 0xff) << 0;
-  return v2;
-#endif
-}
-
-uint64_t get_uint64_le(void *src) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint64_t *v1 = COERCE_PTR(uint64_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint64_t v2;
-  v2 = ((uint64_t)(*v1++ & 0xff)) << 0;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 8;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 16;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 24;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 32;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 40;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 48;
-  v2 |= ((uint64_t)(*v1 & 0xff)) << 56;
-  return v2;
-#endif
-}
-
-uint64_t get_uint64_be(void *src) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint64_t *v1 = COERCE_PTR(uint64_t, src);
-  return *v1;
-#else
-  uint8_t *v1 = COERCE_PTR(uint8_t, src);
-  uint64_t v2;
-  v2 = ((uint64_t)(*v1++ & 0xff)) << 56;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 48;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 40;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 32;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 24;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 16;
-  v2 |= ((uint64_t)(*v1++ & 0xff)) << 8;
-  v2 |= ((uint64_t)(*v1 & 0xff)) << 0;
-  return v2;
-#endif
-}
-
-float get_float_le(void *src) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  return *COERCE_PTR(float, src);
-#else
-  uint32_t v1 = get_uint32_le(src);
-  return *COERCE_PTR(float, &v1);
-#endif
-}
-
-float get_float_be(void *src) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  return *COERCE_PTR(float, src);
-#else
-  uint32_t v1 = get_uint32_be(src);
-  return *COERCE_PTR(float, &v1);
-#endif
-}
-
-double get_double_le(void *src) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  return *COERCE_PTR(double, src);
-#else
-  uint64_t v1 = get_uint64_le(src);
-  return *COERCE_PTR(double, &v1);
-#endif
-}  
-
-double get_double_be(void *src) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  return *COERCE_PTR(double, src);
-#else
-  uint64_t v1 = get_uint64_be(src);
-  return *COERCE_PTR(double, &v1);
-#endif
-}
-
-void put_uint8_le(void *dst, uint8_t v) {
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d = v;
-}
-
-void put_uint8_be(void *dst, uint8_t v) {
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d = v;
-}  
-
-void put_uint16_le(void *dst, uint16_t v) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint16_t *d = COERCE_PTR(uint16_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 0) & 0xff;
-  *d = (v >> 8) & 0xff;
-#endif
-}
+void revcpy(void *dst, const void *src, int nbytes) {
+  uint8_t *d = dst;
+  const uint8_t *s = src;
   
-void put_uint16_be(void *dst, uint16_t v) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint16_t *d = COERCE_PTR(uint16_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 8) & 0xff;
-  *d = (v >> 0) & 0xff;
-#endif
+  d += nbytes;
+  while (nbytes--) {
+    *--d = *s++;
+  }
 }
 
-void put_uint32_le(void *dst, uint32_t v) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint32_t *d = COERCE_PTR(uint32_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 0) & 0xff;
-  *d++ = (v >> 8) & 0xff;
-  *d++ = (v >> 16) & 0xff;
-  *d = (v >> 24) & 0xff;
-#endif
-}
+// special case the one-byte operations
+uint8_t get_int8_t_be(void *src) { return *(int8_t *)src; }
+uint8_t get_int8_t_le(void *src) { return *(int8_t *)src; }
+uint8_t get_uint8_t_be(void *src) { return *(uint8_t *)src; }
+uint8_t get_uint8_t_le(void *src) { return *(uint8_t *)src; }
 
-void put_uint32_be(void *dst, uint32_t v) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint32_t *d = COERCE_PTR(uint32_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 24) & 0xff;
-  *d++ = (v >> 16) & 0xff;
-  *d++ = (v >> 8) & 0xff;
-  *d = (v >> 0) & 0xff;
-#endif
-}
+void put_int8_t_be(void *dst, int8_t v) { *(int8_t *)dst = v; }
+void put_int8_t_le(void *dst, int8_t v) { *(int8_t *)dst = v; }
+void put_uint8_t_be(void *dst, uint8_t v) { *(uint8_t *)dst = v; }
+void put_uint8_t_le(void *dst, uint8_t v) { *(uint8_t *)dst = v; }
 
-void put_uint64_le(void *dst, uint64_t v) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  uint64_t *d = COERCE_PTR(uint64_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 0) & 0xff;
-  *d++ = (v >> 8) & 0xff;
-  *d++ = (v >> 16) & 0xff;
-  *d++ = (v >> 24) & 0xff;
-  *d++ = (v >> 32) & 0xff;
-  *d++ = (v >> 40) & 0xff;
-  *d++ = (v >> 48) & 0xff;
-  *d = (v >> 56) & 0xff;
-#endif
-}
+#define MAKE_GETTER_PUTTER(type)            \
+  type get_##type##_be(void *src) {         \
+    type v;                                 \
+    MEMCPY_BE(&v, src, sizeof(type));       \
+    return v;                               \
+  }                                         \
+  type get_##type##_le(void *src) {         \
+    type v;                                 \
+    MEMCPY_LE(&v, src, sizeof(type));       \
+    return v;                               \
+  }                                         \
+  void put_##type##_be(void *dst, type v) { \
+    MEMCPY_BE(dst, &v, sizeof(type));       \
+  }                                         \
+  void put_##type##_le(void *dst, type v) { \
+    MEMCPY_LE(dst, &v, sizeof(type));       \
+  }
 
-void put_uint64_be(void *dst, uint64_t v) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
-  uint64_t *d = COERCE_PTR(uint64_t, dst);
-  *d = v;
-#else
-  uint8_t *d = COERCE_PTR(uint8_t, dst);
-  *d++ = (v >> 56) & 0xff;
-  *d++ = (v >> 48) & 0xff;
-  *d++ = (v >> 40) & 0xff;
-  *d++ = (v >> 32) & 0xff;
-  *d++ = (v >> 24) & 0xff;
-  *d++ = (v >> 16) & 0xff;
-  *d++ = (v >> 8) & 0xff;
-  *d = (v >> 0) & 0xff;
-#endif
-}
-
-void put_float_le(void *dst, float v) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  float *d = COERCE_PTR(float, dst);
-  *d = v;
-#else
-  uint32_t *v1 = COERCE_PTR(uint32_t, &v);
-  put_uint32_le(dst, *v1);
-#endif
-}
-
-void put_float_be(void *dst, float v) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
- float *d = COERCE_PTR(float, dst);
- *d = v;
-#else
-  uint32_t *v1 = COERCE_PTR(uint32_t, &v);
-  put_uint32_be(dst, *v1);
-#endif
-}
-
-void put_double_le(void *dst, double v) {
-#if ENDIAN_ORDER == __ORDER_LITTLE_ENDIAN__
-  double *d = COERCE_PTR(double, dst);
-  *d = v;
-#else
-  uint64_t *v1 = COERCE_PTR(uint64_t, &v);
-  put_uint64_le(dst, *v1);
-#endif
-}
-
-void put_double_be(void *dst, double v) {
-#if ENDIAN_ORDER == __ORDER_BIG_ENDIAN__
- double *d = COERCE_PTR(double, dst);
- *d = v;
-#else
-  uint64_t *v1 = COERCE_PTR(uint64_t, &v);
-  put_uint64_be(dst, *v1);
-#endif
-}
+MAKE_GETTER_PUTTER(double)
+MAKE_GETTER_PUTTER(float)
+MAKE_GETTER_PUTTER(int16_t)
+MAKE_GETTER_PUTTER(int32_t)
+MAKE_GETTER_PUTTER(int64_t)
+MAKE_GETTER_PUTTER(uint16_t)
+MAKE_GETTER_PUTTER(uint32_t)
+MAKE_GETTER_PUTTER(uint64_t)
 
 // =============================================================================
 // UNIT TESTING
@@ -342,15 +125,15 @@ int main() {
   uint8_t a3be[] = {0x3f, 0xf1, 0x12, 0x23, 0x34, 0x45, 0x56, 0x67};
 
   fprintf(stderr, "Starting endian tests...\n");
-  
-  ASSERT(get_uint8_le((void *)a1) == 0x11);
-  ASSERT(get_uint8_be((void *)a1) == 0x11);
-  ASSERT(get_uint16_le((void *)a1) == 0x2211);
-  ASSERT(get_uint16_be((void *)a1) == 0x1122);
-  ASSERT(get_uint32_le((void *)a1) == 0x44332211);
-  ASSERT(get_uint32_be((void *)a1) == 0x11223344);
-  ASSERT(get_uint64_le((void *)a1) == 0x8877665544332211);
-  ASSERT(get_uint64_be((void *)a1) == 0x1122334455667788);
+
+  ASSERT(get_uint8_t_le((void *)a1) == 0x11);
+  ASSERT(get_uint8_t_be((void *)a1) == 0x11);
+  ASSERT(get_uint16_t_le((void *)a1) == 0x2211);
+  ASSERT(get_uint16_t_be((void *)a1) == 0x1122);
+  ASSERT(get_uint32_t_le((void *)a1) == 0x44332211);
+  ASSERT(get_uint32_t_be((void *)a1) == 0x11223344);
+  ASSERT(get_uint64_t_le((void *)a1) == 0x8877665544332211);
+  ASSERT(get_uint64_t_be((void *)a1) == 0x1122334455667788);
 
   ASSERT(f_near(get_float_le((void *)a2le), f2));
   ASSERT(f_near(get_float_be((void *)a2be), f2));
@@ -360,23 +143,23 @@ int main() {
 
   uint8_t *d[8];
   void *dst = (void *)d;
-  
-  put_uint8_le(dst, 0x01);
-  ASSERT(get_uint8_le(dst) == 0x01);
-  put_uint8_be(dst, 0x02);
-  ASSERT(get_uint8_be(dst) == 0x02);
-  put_uint16_le(dst, 0x0304);
-  ASSERT(get_uint16_le(dst) == 0x0304);
-  put_uint16_be(dst, 0x0506);
-  ASSERT(get_uint16_be(dst) == 0x0506);
-  put_uint32_le(dst, 0x0708090a);
-  ASSERT(get_uint32_le(dst) == 0x0708090a);
-  put_uint32_be(dst, 0x0b0c0d0e);
-  ASSERT(get_uint32_be(dst) == 0x0b0c0d0e);
-  put_uint64_le(dst, 0x0f10111213141516);
-  ASSERT(get_uint64_le(dst) == 0x0f10111213141516);
-  put_uint64_be(dst, 0x1718191a1b1c1d1e);
-  ASSERT(get_uint64_be(dst) == 0x1718191a1b1c1d1e);
+
+  put_uint8_t_le(dst, 0x01);
+  ASSERT(get_uint8_t_le(dst) == 0x01);
+  put_uint8_t_be(dst, 0x02);
+  ASSERT(get_uint8_t_be(dst) == 0x02);
+  put_uint16_t_le(dst, 0x0304);
+  ASSERT(get_uint16_t_le(dst) == 0x0304);
+  put_uint16_t_be(dst, 0x0506);
+  ASSERT(get_uint16_t_be(dst) == 0x0506);
+  put_uint32_t_le(dst, 0x0708090a);
+  ASSERT(get_uint32_t_le(dst) == 0x0708090a);
+  put_uint32_t_be(dst, 0x0b0c0d0e);
+  ASSERT(get_uint32_t_be(dst) == 0x0b0c0d0e);
+  put_uint64_t_le(dst, 0x0f10111213141516);
+  ASSERT(get_uint64_t_le(dst) == 0x0f10111213141516);
+  put_uint64_t_be(dst, 0x1718191a1b1c1d1e);
+  ASSERT(get_uint64_t_be(dst) == 0x1718191a1b1c1d1e);
 
   put_float_le(dst, f2);
   ASSERT(f_near(get_float_le(dst), f2));
