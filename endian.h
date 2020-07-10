@@ -30,6 +30,11 @@ SOFTWARE.
 
 #include <stdint.h>
 
+/* Provide C++ Compatibility */
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 /**
  * For pointer-to-pointer transfers, endian provides the MEMCPY_LE and MEMCPY_BE
  * macros:
@@ -106,5 +111,10 @@ void put_float_be(void *dst, float v);
 
 void put_double_le(void *dst, double v);
 void put_double_be(void *dst, double v);
+
+/* Provide C++ Compatibility */
+#ifdef __cplusplus
+}
+#endif
 
 #endif
