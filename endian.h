@@ -75,27 +75,45 @@ extern "C" {
  */
 void revcpy(void *dst, const void *src, int nbytes);
 
-uint8_t get_uint8_t_le(void *src); // 'a needless consistancy...' :)
-uint8_t get_uint8_t_be(void *src);
+uint8_t get_uint8_t_le(const void *src); // 'a needless consistancy...' :)
+uint8_t get_uint8_t_be(const void *src);
 
-uint16_t get_uint16_t_le(void *src);
-uint16_t get_uint16_t_be(void *src);
+int16_t get_int16_t_le(const void *src);
+int16_t get_int16_t_be(const void *src);
 
-uint32_t get_uint32_t_le(void *src);
-uint32_t get_uint32_t_be(void *src);
+int32_t get_int32_t_le(const void *src);
+int32_t get_int32_t_be(const void *src);
 
-uint64_t get_uint64_t_le(void *src);
-uint64_t get_uint64_t_be(void *src);
+int64_t get_int64_t_le(const void *src);
+int64_t get_int64_t_be(const void *src);
 
-float get_float_le(void *src);
-float get_float_be(void *src);
+uint16_t get_uint16_t_le(const void *src);
+uint16_t get_uint16_t_be(const void *src);
 
-double get_double_le(void *src);
-double get_double_be(void *src);
+uint32_t get_uint32_t_le(const void *src);
+uint32_t get_uint32_t_be(const void *src);
+
+uint64_t get_uint64_t_le(const void *src);
+uint64_t get_uint64_t_be(const void *src);
+
+float get_float_le(const void *src);
+float get_float_be(const void *src);
+
+double get_double_le(const void *src);
+double get_double_be(const void *src);
 
 
 void put_uint8_t_le(void *dst, uint8_t v);
 void put_uint8_t_be(void *dst, uint8_t v);
+
+void put_int16_t_le(void *dst, int16_t v);
+void put_int16_t_be(void *dst, int16_t v);
+
+void put_int32_t_le(void *dst, int32_t v);
+void put_int32_t_be(void *dst, int32_t v);
+
+void put_int64_t_le(void *dst, int64_t v);
+void put_int64_t_be(void *dst, int64_t v);
 
 void put_uint16_t_le(void *dst, uint16_t v);
 void put_uint16_t_be(void *dst, uint16_t v);

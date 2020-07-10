@@ -53,10 +53,10 @@ void revcpy(void *dst, const void *src, int nbytes) {
 }
 
 // special case the one-byte operations
-uint8_t get_int8_t_be(void *src) { return *(int8_t *)src; }
-uint8_t get_int8_t_le(void *src) { return *(int8_t *)src; }
-uint8_t get_uint8_t_be(void *src) { return *(uint8_t *)src; }
-uint8_t get_uint8_t_le(void *src) { return *(uint8_t *)src; }
+uint8_t get_int8_t_be(const void *src) { return *(int8_t *)src; }
+uint8_t get_int8_t_le(const void *src) { return *(int8_t *)src; }
+uint8_t get_uint8_t_be(const void *src) { return *(uint8_t *)src; }
+uint8_t get_uint8_t_le(const void *src) { return *(uint8_t *)src; }
 
 void put_int8_t_be(void *dst, int8_t v) { *(int8_t *)dst = v; }
 void put_int8_t_le(void *dst, int8_t v) { *(int8_t *)dst = v; }
@@ -64,12 +64,12 @@ void put_uint8_t_be(void *dst, uint8_t v) { *(uint8_t *)dst = v; }
 void put_uint8_t_le(void *dst, uint8_t v) { *(uint8_t *)dst = v; }
 
 #define MAKE_GETTER_PUTTER(type)            \
-  type get_##type##_be(void *src) {         \
+  type get_##type##_be(const void *src) {         \
     type v;                                 \
     MEMCPY_BE(&v, src, sizeof(type));       \
     return v;                               \
   }                                         \
-  type get_##type##_le(void *src) {         \
+  type get_##type##_le(const void *src) {         \
     type v;                                 \
     MEMCPY_LE(&v, src, sizeof(type));       \
     return v;                               \
@@ -128,10 +128,16 @@ int main() {
 
   ASSERT(get_uint8_t_le((void *)a1) == 0x11);
   ASSERT(get_uint8_t_be((void *)a1) == 0x11);
+  ASSERT(get_int16_t_le((void *)a1) == 0x2211);
+  ASSERT(get_int16_t_be((void *)a1) == 0x1122);
   ASSERT(get_uint16_t_le((void *)a1) == 0x2211);
   ASSERT(get_uint16_t_be((void *)a1) == 0x1122);
+  ASSERT(get_int32_t_le((void *)a1) == 0x44332211);
+  ASSERT(get_int32_t_be((void *)a1) == 0x11223344);
   ASSERT(get_uint32_t_le((void *)a1) == 0x44332211);
   ASSERT(get_uint32_t_be((void *)a1) == 0x11223344);
+  ASSERT(get_int64_t_le((void *)a1) == 0x8877665544332211);
+  ASSERT(get_int64_t_be((void *)a1) == 0x1122334455667788);
   ASSERT(get_uint64_t_le((void *)a1) == 0x8877665544332211);
   ASSERT(get_uint64_t_be((void *)a1) == 0x1122334455667788);
 
@@ -148,14 +154,32 @@ int main() {
   ASSERT(get_uint8_t_le(dst) == 0x01);
   put_uint8_t_be(dst, 0x02);
   ASSERT(get_uint8_t_be(dst) == 0x02);
+
+  put_int16_t_le(dst, 0x0304);
+  ASSERT(get_int16_t_le(dst) == 0x0304);
+  put_int16_t_be(dst, 0x0506);
+  ASSERT(get_int16_t_be(dst) == 0x0506);
+
   put_uint16_t_le(dst, 0x0304);
   ASSERT(get_uint16_t_le(dst) == 0x0304);
   put_uint16_t_be(dst, 0x0506);
   ASSERT(get_uint16_t_be(dst) == 0x0506);
+
+  put_int32_t_le(dst, 0x0708090a);
+  ASSERT(get_int32_t_le(dst) == 0x0708090a);
+  put_int32_t_be(dst, 0x0b0c0d0e);
+  ASSERT(get_int32_t_be(dst) == 0x0b0c0d0e);
+
   put_uint32_t_le(dst, 0x0708090a);
   ASSERT(get_uint32_t_le(dst) == 0x0708090a);
   put_uint32_t_be(dst, 0x0b0c0d0e);
   ASSERT(get_uint32_t_be(dst) == 0x0b0c0d0e);
+
+  put_int64_t_le(dst, 0x0f10111213141516);
+  ASSERT(get_int64_t_le(dst) == 0x0f10111213141516);
+  put_int64_t_be(dst, 0x1718191a1b1c1d1e);
+  ASSERT(get_int64_t_be(dst) == 0x1718191a1b1c1d1e);
+
   put_uint64_t_le(dst, 0x0f10111213141516);
   ASSERT(get_uint64_t_le(dst) == 0x0f10111213141516);
   put_uint64_t_be(dst, 0x1718191a1b1c1d1e);
